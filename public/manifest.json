@@ -1,0 +1,9 @@
+{
+  "name": "ICSE Boards Grind",
+  "short_name": "Boards Grind",
+  "description": "Your personal ICSE 2026 board exam study dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#1a73e8"
+}
