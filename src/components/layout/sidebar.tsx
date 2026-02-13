@@ -2,8 +2,24 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/use-store";
+
+function useOnlineCount(min = 112, max = 252) {
+  const [count, setCount] = useState(() => Math.floor(Math.random() * (max - min + 1)) + min);
+  useEffect(() => {
+    const tick = () => {
+      const delta = Math.floor(Math.random() * 13) - 6; // -6 to +6
+      setCount((prev) => Math.min(max, Math.max(min, prev + delta)));
+      const next = (Math.random() * 8 + 3) * 1000; // 3-11 seconds
+      timeout = setTimeout(tick, next);
+    };
+    let timeout = setTimeout(tick, (Math.random() * 5 + 3) * 1000);
+    return () => clearTimeout(timeout);
+  }, [min, max]);
+  return count;
+}
 
 type NavItem = {
   href: string;
@@ -117,6 +133,7 @@ export function Sidebar({ collapsed, mobileOpen, onToggleCollapse, onCloseMobile
   const pathname = usePathname();
   const name = useStore((s) => s.name) || "Student";
   const initials = name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "U";
+  const onlineCount = useOnlineCount();
 
   return (
     <>
@@ -196,6 +213,21 @@ export function Sidebar({ collapsed, mobileOpen, onToggleCollapse, onCloseMobile
             );
           })}
         </nav>
+
+        {/* Grinding counter */}
+        <div className={`px-3 py-2 ${collapsed ? "text-center" : ""}`}>
+          <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : ""}`}>
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            </span>
+            {!collapsed && (
+              <span className="text-xs text-white/50">
+                <span className="text-green-400 font-semibold">{onlineCount}</span> grinding for ICSE
+              </span>
+            )}
+          </div>
+        </div>
 
         {/* Footer */}
         <div className="px-3 py-3 border-t border-white/10">
