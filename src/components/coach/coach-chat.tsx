@@ -64,6 +64,7 @@ export function CoachChat() {
     addMessage(userMsg);
     capture("coach_message_sent", {
       source,
+      message_content: text.trim(),
       message_length: text.trim().length,
       is_quick_prompt: source === "quick_prompt",
     });
