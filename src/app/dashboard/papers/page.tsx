@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import posthog from "posthog-js";
+import { capture } from "@/lib/analytics";
 import { useStore } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
 import { StatChip } from "@/components/ui/stat-chip";
@@ -42,7 +42,7 @@ export default function PapersPage() {
   const availableYears = useMemo(() => getAvailableYears(), []);
 
   useEffect(() => {
-    posthog.capture("papers_page_viewed");
+    capture("papers_page_viewed");
   }, []);
 
   // Toggle: show only my subjects vs all papers
@@ -52,7 +52,7 @@ export default function PapersPage() {
   // Track filter changes
   useEffect(() => {
     if (showAllPapers) {
-      posthog.capture("papers_show_all_toggled", { show_all: true });
+      capture("papers_show_all_toggled", { show_all: true });
     }
   }, [showAllPapers]);
 
