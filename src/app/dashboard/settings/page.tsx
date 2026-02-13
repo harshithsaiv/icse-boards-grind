@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useStore } from "@/store/use-store";
 import { useAuth } from "@/providers/auth-provider";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SUBJECT_LABELS, SUBJECT_COLORS } from "@/lib/constants";
+import { getSubjectLabels, getSubjectColors, SECOND_LANGUAGES, ELECTIVES } from "@/lib/constants";
 import { today } from "@/lib/utils";
 import { deleteCloudData } from "@/store/firebase-sync";
 
@@ -18,6 +18,11 @@ export default function SettingsPage() {
   const setAll = useStore((s) => s.setAll);
   const resetStore = useStore((s) => s.resetStore);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const lang = data.selectedLanguage || "kannada";
+  const elective = data.selectedElective || "computer";
+  const SUBJECT_LABELS = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
+  const SUBJECT_COLORS = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
 
   const [name, setName] = useState(data.name || "");
   const [studyHours, setStudyHours] = useState(data.studyHours || 8);
@@ -156,6 +161,42 @@ export default function SettingsPage() {
               className="w-full"
             />
           </div>
+        </div>
+      </Card>
+
+      {/* Subject Selection */}
+      <Card>
+        <h3 className="text-sm font-semibold mb-4" style={{ color: "var(--text)" }}>Subjects</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>Second Language</label>
+            <select
+              value={lang}
+              onChange={(e) => setField("selectedLanguage", e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-sm"
+              style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+            >
+              {SECOND_LANGUAGES.map((l) => (
+                <option key={l.key} value={l.key}>{l.name} ({l.date})</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>Elective</label>
+            <select
+              value={elective}
+              onChange={(e) => setField("selectedElective", e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-sm"
+              style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+            >
+              {ELECTIVES.map((el) => (
+                <option key={el.key} value={el.key}>{el.name} — Group {el.group} ({el.date})</option>
+              ))}
+            </select>
+          </div>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            Changing subjects will update your exam dates and study plans.
+          </p>
         </div>
       </Card>
 

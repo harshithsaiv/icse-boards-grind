@@ -4,12 +4,14 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useStore } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
-import { SUBJECT_LABELS, SUBJECT_COLORS } from "@/lib/constants";
+import { getSubjectLabels, getSubjectColors } from "@/lib/constants";
 import { today } from "@/lib/utils";
 
 export function TimerStats() {
   const data = useStore();
   const td = today();
+  const SUBJECT_LABELS = useMemo(() => getSubjectLabels(data.selectedLanguage || "kannada", data.selectedElective || "computer"), [data.selectedLanguage, data.selectedElective]);
+  const SUBJECT_COLORS = useMemo(() => getSubjectColors(data.selectedLanguage || "kannada", data.selectedElective || "computer"), [data.selectedLanguage, data.selectedElective]);
 
   const todayLog = (data.studyLog || {})[td];
   const hoursToday = todayLog ? todayLog.hours : 0;

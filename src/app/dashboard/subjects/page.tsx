@@ -1,10 +1,15 @@
 "use client";
 
-import { SUBJECT_LABELS } from "@/lib/constants";
+import { useMemo } from "react";
+import { useStore } from "@/store/use-store";
+import { getSubjectLabels } from "@/lib/constants";
 import { SubjectCard } from "@/components/subjects/subject-card";
 
 export default function SubjectsPage() {
-  const subjectKeys = Object.keys(SUBJECT_LABELS);
+  const lang = useStore((s) => s.selectedLanguage) || "kannada";
+  const elective = useStore((s) => s.selectedElective) || "computer";
+  const subjectLabels = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
+  const subjectKeys = Object.keys(subjectLabels);
 
   return (
     <div className="max-w-5xl mx-auto space-y-3">

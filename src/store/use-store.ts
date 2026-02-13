@@ -32,6 +32,22 @@ export interface ExamAssessment {
   skipped?: boolean;
 }
 
+export interface CoachMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: number;
+  planChanges?: ParsedPlanChange[];
+}
+
+export interface ParsedPlanChange {
+  action: "add" | "remove" | "replace";
+  start: string;
+  end: string;
+  subject?: string;
+  label: string;
+  applied?: boolean;
+}
+
 export interface StoreState {
   onboarded: boolean;
   name: string;
@@ -52,6 +68,10 @@ export interface StoreState {
   customPlans: Record<string, Block[]>;
   examAssessments: Record<string, ExamAssessment>;
   lastExamNotification: string | null;
+  selectedLanguage: string;
+  selectedElective: string;
+  coachMessages: Record<string, CoachMessage[]>;
+  dailyBriefingCache: Record<string, { content: string; timestamp: number }>;
   _hydrated: boolean;
 }
 
@@ -90,6 +110,10 @@ const defaultState: StoreState = {
   customPlans: {},
   examAssessments: {},
   lastExamNotification: null,
+  selectedLanguage: "kannada",
+  selectedElective: "computer",
+  coachMessages: {},
+  dailyBriefingCache: {},
   _hydrated: false,
 };
 

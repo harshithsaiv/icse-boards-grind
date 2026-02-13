@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { SUBJECT_COLORS, SUBJECT_LABELS, type Block } from "@/lib/constants";
+import { getSubjectColors, getSubjectLabels, type Block } from "@/lib/constants";
+import { useStore } from "@/store/use-store";
 import { formatTime24, timeToMin } from "@/lib/utils";
 
 interface DayPlanProps {
@@ -13,6 +14,11 @@ interface DayPlanProps {
 }
 
 export function DayPlan({ blocks, nowMin, isPlanToday, onBlockClick }: DayPlanProps) {
+  const lang = useStore((s) => s.selectedLanguage) || "kannada";
+  const elective = useStore((s) => s.selectedElective) || "computer";
+  const SUBJECT_COLORS = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
+  const SUBJECT_LABELS = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
+
   const renderedBlocks = useMemo(() => {
     return blocks.map((block, i) => {
       const startMin = timeToMin(block.start);
@@ -95,7 +101,7 @@ export function DayPlan({ blocks, nowMin, isPlanToday, onBlockClick }: DayPlanPr
         </motion.div>
       );
     });
-  }, [blocks, nowMin, isPlanToday, onBlockClick]);
+  }, [blocks, nowMin, isPlanToday, onBlockClick, SUBJECT_COLORS, SUBJECT_LABELS]);
 
   if (blocks.length === 0) {
     return (

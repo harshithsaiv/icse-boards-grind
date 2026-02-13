@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/providers/auth-provider";
 import { useStore } from "@/store/use-store";
-import { SUBJECT_LABELS, SUBJECT_COLORS } from "@/lib/constants";
+import { SECOND_LANGUAGES, ELECTIVES, getSubjectLabels, getSubjectColors } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 10;
 
 export default function OnboardingPage() {
   const { user } = useAuth();
@@ -23,13 +23,11 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("kannada");
+  const [selectedElective, setSelectedElective] = useState("computer");
   const [learningStyle, setLearningStyle] = useState("mixed");
   const [studyHours, setStudyHours] = useState(8);
-  const [ratings, setRatings] = useState<Record<string, string>>(() => {
-    const r: Record<string, string> = {};
-    Object.keys(SUBJECT_LABELS).forEach((k) => (r[k] = "medium"));
-    return r;
-  });
+  const [ratings, setRatings] = useState<Record<string, string>>({});
   const [targetPercent, setTargetPercent] = useState(90);
   const [prepLevel, setPrepLevel] = useState("somewhat");
   const [routine, setRoutine] = useState({
@@ -37,6 +35,19 @@ export default function OnboardingPage() {
     snack: "17:00", dinner: "20:30", sleep: "22:30",
   });
   const [grokApiKey, setGrokApiKey] = useState("");
+
+  // Compute dynamic labels/colors based on selections
+  const subjectLabels = useMemo(() => getSubjectLabels(selectedLanguage, selectedElective), [selectedLanguage, selectedElective]);
+  const subjectColors = useMemo(() => getSubjectColors(selectedLanguage, selectedElective), [selectedLanguage, selectedElective]);
+
+  // Initialize ratings when labels change
+  useEffect(() => {
+    setRatings((prev) => {
+      const r: Record<string, string> = {};
+      Object.keys(subjectLabels).forEach((k) => (r[k] = prev[k] || "medium"));
+      return r;
+    });
+  }, [subjectLabels]);
 
   if (!user) {
     router.replace("/login");
@@ -52,6 +63,8 @@ export default function OnboardingPage() {
       update((s) => ({
         ...s,
         name: name.trim(),
+        selectedLanguage,
+        selectedElective,
         learningStyle: learningStyle as "visual" | "reading" | "practice" | "mixed",
         studyHours,
         subjectRatings: ratings as Record<string, "weak" | "medium" | "strong">,
@@ -123,8 +136,61 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 2: Learning Style */}
+              {/* Step 2: Second Language */}
               {step === 2 && (
+                <div>
+                  <h2 className="text-xl font-bold mb-1 text-center" style={{ color: "var(--text)" }}>Choose your second language</h2>
+                  <p className="text-sm mb-4 text-center" style={{ color: "var(--text-secondary)" }}>Select the language you&apos;re taking for ICSE</p>
+                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    {SECOND_LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.key}
+                        onClick={() => setSelectedLanguage(lang.key)}
+                        className="w-full p-3 rounded-xl text-left transition-all flex items-center justify-between"
+                        style={{
+                          background: selectedLanguage === lang.key ? "var(--primary-light)" : "var(--bg)",
+                          border: `2px solid ${selectedLanguage === lang.key ? "var(--primary)" : "var(--border)"}`,
+                        }}
+                      >
+                        <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{lang.name}</span>
+                        <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{lang.date}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Elective */}
+              {step === 3 && (
+                <div>
+                  <h2 className="text-xl font-bold mb-1 text-center" style={{ color: "var(--text)" }}>Choose your elective</h2>
+                  <p className="text-sm mb-4 text-center" style={{ color: "var(--text-secondary)" }}>Select your Group II / III elective subject</p>
+                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    {ELECTIVES.map((elective) => (
+                      <button
+                        key={elective.key}
+                        onClick={() => setSelectedElective(elective.key)}
+                        className="w-full p-3 rounded-xl text-left transition-all flex items-center justify-between"
+                        style={{
+                          background: selectedElective === elective.key ? "var(--primary-light)" : "var(--bg)",
+                          border: `2px solid ${selectedElective === elective.key ? "var(--primary)" : "var(--border)"}`,
+                        }}
+                      >
+                        <div>
+                          <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{elective.name}</span>
+                          <span className="text-xs ml-2 px-1.5 py-0.5 rounded" style={{ color: "var(--text-secondary)", background: "var(--bg)" }}>
+                            Group {elective.group}
+                          </span>
+                        </div>
+                        <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{elective.date}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Learning Style */}
+              {step === 4 && (
                 <div>
                   <h2 className="text-xl font-bold mb-1 text-center" style={{ color: "var(--text)" }}>How do you learn best?</h2>
                   <p className="text-sm mb-6 text-center" style={{ color: "var(--text-secondary)" }}>We&apos;ll tailor suggestions to your style</p>
@@ -147,8 +213,8 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 3: Study Hours */}
-              {step === 3 && (
+              {/* Step 5: Study Hours */}
+              {step === 5 && (
                 <div className="text-center">
                   <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text)" }}>Daily study target?</h2>
                   <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Set your daily study hours goal</p>
@@ -164,16 +230,16 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 4: Subject Confidence */}
-              {step === 4 && (
+              {/* Step 6: Subject Confidence */}
+              {step === 6 && (
                 <div>
                   <h2 className="text-xl font-bold mb-1 text-center" style={{ color: "var(--text)" }}>Rate your confidence</h2>
                   <p className="text-sm mb-4 text-center" style={{ color: "var(--text-secondary)" }}>How prepared are you in each subject?</p>
                   <div className="space-y-2 max-h-80 overflow-y-auto">
-                    {Object.keys(SUBJECT_LABELS).map((key) => (
+                    {Object.keys(subjectLabels).map((key) => (
                       <div key={key} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: SUBJECT_COLORS[key] }} />
-                        <span className="text-sm flex-1 truncate" style={{ color: "var(--text)" }}>{SUBJECT_LABELS[key]}</span>
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: subjectColors[key] }} />
+                        <span className="text-sm flex-1 truncate" style={{ color: "var(--text)" }}>{subjectLabels[key]}</span>
                         <div className="flex gap-1">
                           {(["weak", "medium", "strong"] as const).map((r) => (
                             <button
@@ -196,8 +262,8 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 5: Target Percentage */}
-              {step === 5 && (
+              {/* Step 7: Target Percentage */}
+              {step === 7 && (
                 <div className="text-center">
                   <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text)" }}>Target percentage?</h2>
                   <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>What marks are you aiming for?</p>
@@ -210,8 +276,8 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 6: Prep Level */}
-              {step === 6 && (
+              {/* Step 8: Prep Level */}
+              {step === 8 && (
                 <div>
                   <h2 className="text-xl font-bold mb-1 text-center" style={{ color: "var(--text)" }}>How prepared are you?</h2>
                   <p className="text-sm mb-6 text-center" style={{ color: "var(--text-secondary)" }}>Your current preparation status</p>
@@ -234,8 +300,8 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 7: Daily Routine */}
-              {step === 7 && (
+              {/* Step 9: Daily Routine */}
+              {step === 9 && (
                 <div>
                   <h2 className="text-xl font-bold mb-1 text-center" style={{ color: "var(--text)" }}>Your daily routine</h2>
                   <p className="text-sm mb-4 text-center" style={{ color: "var(--text-secondary)" }}>We&apos;ll plan study blocks around your schedule</p>
@@ -256,8 +322,8 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 8: Grok API Key */}
-              {step === 8 && (
+              {/* Step 10: Grok API Key */}
+              {step === 10 && (
                 <div className="text-center">
                   <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text)" }}>AI Study Assistant</h2>
                   <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Optional: Add an API key for AI-powered study help</p>

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useStore } from "@/store/use-store";
-import { EXAMS, SUBJECT_COLORS, SUBJECT_LABELS, type Block } from "@/lib/constants";
+import { getExams, getSubjectColors, getSubjectLabels, type Block } from "@/lib/constants";
 import { today, formatDate, formatTime24, timeToMin, daysBetween } from "@/lib/utils";
 import { getDayPlan } from "@/lib/algorithms";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,12 @@ const MONTH_NAMES = [
 export default function CalendarPage() {
   const data = useStore();
   const td = today();
+
+  const lang = data.selectedLanguage || "kannada";
+  const elective = data.selectedElective || "computer";
+  const EXAMS = useMemo(() => getExams(lang, elective), [lang, elective]);
+  const SUBJECT_COLORS = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
+  const SUBJECT_LABELS = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
 
   const now = new Date();
   const [calMonth, setCalMonth] = useState(now.getMonth());

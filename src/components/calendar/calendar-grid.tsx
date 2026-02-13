@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { EXAMS, SUBJECT_COLORS } from "@/lib/constants";
+import { getExams, getSubjectColors, type Exam } from "@/lib/constants";
+import { useStore } from "@/store/use-store";
 import { today, dateStr, daysBetween } from "@/lib/utils";
 import type { StudyLogEntry } from "@/store/use-store";
 
@@ -18,8 +19,12 @@ const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function CalendarGrid({ month, year, studyLog, onDayClick, selectedDate }: CalendarGridProps) {
   const td = today();
+  const lang = useStore((s) => s.selectedLanguage) || "kannada";
+  const elective = useStore((s) => s.selectedElective) || "computer";
+  const exams = useMemo(() => getExams(lang, elective), [lang, elective]);
+  const subjectColors = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
 
-  const { cells, daysInMonth, firstDayOffset } = useMemo(() => {
+  const { cells } = useMemo(() => {
     const dim = new Date(year, month + 1, 0).getDate();
     const fdo = new Date(year, month, 1).getDay();
 
@@ -54,12 +59,12 @@ export function CalendarGrid({ month, year, studyLog, onDayClick, selectedDate }
       const isToday = ds === td;
 
       // Check exam day
-      const exam = EXAMS.find((e) => e.date === ds);
+      const exam = exams.find((e) => e.date === ds);
       const isExamDay = !!exam;
-      const examColor = exam ? SUBJECT_COLORS[exam.key] || "var(--primary)" : null;
+      const examColor = exam ? subjectColors[exam.key] || "var(--primary)" : null;
 
       // Check revision day (1-2 days before any exam)
-      const isRevisionDay = !isExamDay && EXAMS.some((e) => {
+      const isRevisionDay = !isExamDay && exams.some((e) => {
         const diff = daysBetween(ds, e.date);
         return diff >= 1 && diff <= 2;
       });
@@ -81,7 +86,7 @@ export function CalendarGrid({ month, year, studyLog, onDayClick, selectedDate }
     }
 
     return { cells: cellData, daysInMonth: dim, firstDayOffset: fdo };
-  }, [month, year, studyLog, td]);
+  }, [month, year, studyLog, td, exams, subjectColors]);
 
   return (
     <div>

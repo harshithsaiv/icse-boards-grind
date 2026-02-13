@@ -6,7 +6,7 @@ import { useStore } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
 import { StatChip } from "@/components/ui/stat-chip";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { EXAMS, SUBJECT_COLORS, SUBJECT_LABELS, MOTIVATIONAL_QUOTES } from "@/lib/constants";
+import { getExams, getSubjectColors, getSubjectLabels, MOTIVATIONAL_QUOTES } from "@/lib/constants";
 import { today, daysBetween, formatDate, formatTime24, timeToMin } from "@/lib/utils";
 import { getDayPlan } from "@/lib/algorithms";
 
@@ -14,6 +14,12 @@ export default function DashboardPage() {
   const data = useStore();
   const td = today();
   const [now, setNow] = useState(new Date());
+
+  const lang = data.selectedLanguage || "kannada";
+  const elective = data.selectedElective || "computer";
+  const exams = useMemo(() => getExams(lang, elective), [lang, elective]);
+  const subjectLabels = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
+  const subjectColors = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
 
   // Auto-refresh every minute
   useEffect(() => {
@@ -35,7 +41,7 @@ export default function DashboardPage() {
   }, [data.subjects]);
 
   // Next exam countdown
-  const nextExam = EXAMS.find((e) => e.date >= td);
+  const nextExam = exams.find((e) => e.date >= td);
   const examDays = nextExam ? daysBetween(td, nextExam.date) : null;
 
   // Today's plan
@@ -43,27 +49,27 @@ export default function DashboardPage() {
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
   // Upcoming exams
-  const upcomingExams = EXAMS.filter((e) => e.date >= td).slice(0, 4);
+  const upcomingExams = exams.filter((e) => e.date >= td).slice(0, 4);
 
   // Focus areas
   const focusItems = useMemo(() => {
     const items: { subject: string; color: string; detail: string; tag: string }[] = [];
-    Object.keys(SUBJECT_LABELS).forEach((key) => {
+    Object.keys(subjectLabels).forEach((key) => {
       const rating = (data.subjectRatings || {})[key] || "medium";
-      const exam = EXAMS.find((e) => e.key === key);
+      const exam = exams.find((e) => e.key === key);
       const chapters = data.subjects[key] || [];
       const incomplete = chapters.filter((c) => c.status !== "completed").length;
       if (rating === "weak" && exam && exam.date >= td) {
-        items.push({ subject: SUBJECT_LABELS[key], color: SUBJECT_COLORS[key], detail: `${daysBetween(td, exam.date)}d to exam, ${incomplete} chapters left`, tag: "weak" });
+        items.push({ subject: subjectLabels[key], color: subjectColors[key], detail: `${daysBetween(td, exam.date)}d to exam, ${incomplete} chapters left`, tag: "weak" });
       }
       chapters.forEach((ch) => {
         if (ch.status === "needs_revision") {
-          items.push({ subject: SUBJECT_LABELS[key], color: SUBJECT_COLORS[key], detail: ch.name, tag: "revision" });
+          items.push({ subject: subjectLabels[key], color: subjectColors[key], detail: ch.name, tag: "revision" });
         }
       });
     });
     return items.slice(0, 6);
-  }, [data.subjects, data.subjectRatings, td]);
+  }, [data.subjects, data.subjectRatings, td, exams, subjectLabels, subjectColors]);
 
   // Motivation quote
   const quote = MOTIVATIONAL_QUOTES[Math.floor(Date.now() / 60000) % MOTIVATIONAL_QUOTES.length];
@@ -153,7 +159,7 @@ export default function DashboardPage() {
               const blockEnd = timeToMin(block.end);
               const isCurrent = nowMin >= blockStart && nowMin < blockEnd;
               const isPast = nowMin >= blockEnd;
-              const dotColor = block.type === "study" && block.subjectKey ? SUBJECT_COLORS[block.subjectKey] : undefined;
+              const dotColor = block.type === "study" && block.subjectKey ? subjectColors[block.subjectKey] : undefined;
               return (
                 <div
                   key={i}
@@ -187,7 +193,7 @@ export default function DashboardPage() {
                 const days = daysBetween(td, exam.date);
                 return (
                   <div key={exam.key} className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: SUBJECT_COLORS[exam.key] }} />
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: subjectColors[exam.key] }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{exam.subject}</p>
                       <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{formatDate(exam.date)} · {exam.duration}</p>

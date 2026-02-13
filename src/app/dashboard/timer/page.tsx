@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useStore } from "@/store/use-store";
-import { SUBJECT_LABELS } from "@/lib/constants";
+import { getSubjectLabels } from "@/lib/constants";
 import { today } from "@/lib/utils";
 import { getDayPlan } from "@/lib/algorithms";
 import { Select } from "@/components/ui/select";
@@ -18,6 +18,8 @@ export default function TimerPage() {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedChapter, setSelectedChapter] = useState("");
 
+  const SUBJECT_LABELS = useMemo(() => getSubjectLabels(data.selectedLanguage || "kannada", data.selectedElective || "computer"), [data.selectedLanguage, data.selectedElective]);
+
   // Build subject options
   const subjectOptions = useMemo(() => {
     const opts = [{ value: "", label: "Select Subject" }];
@@ -25,7 +27,7 @@ export default function TimerPage() {
       opts.push({ value: key, label: SUBJECT_LABELS[key] });
     });
     return opts;
-  }, []);
+  }, [SUBJECT_LABELS]);
 
   // Build chapter options based on selected subject
   const chapterOptions = useMemo(() => {

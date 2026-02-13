@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/use-store";
-import { SUBJECT_COLORS, SUBJECT_LABELS, type Chapter } from "@/lib/constants";
+import { getSubjectColors, getSubjectLabels, type Chapter } from "@/lib/constants";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -16,13 +16,17 @@ interface SubjectCardProps {
 
 export function SubjectCard({ subjectKey }: SubjectCardProps) {
   const chapters: Chapter[] = useStore((s) => s.subjects[subjectKey] || []);
+  const lang = useStore((s) => s.selectedLanguage) || "kannada";
+  const elective = useStore((s) => s.selectedElective) || "computer";
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [newChapterName, setNewChapterName] = useState("");
   const [newDifficulty, setNewDifficulty] = useState(3);
 
-  const label = SUBJECT_LABELS[subjectKey] || subjectKey;
-  const color = SUBJECT_COLORS[subjectKey] || "var(--primary)";
+  const labels = getSubjectLabels(lang, elective);
+  const colors = getSubjectColors(lang, elective);
+  const label = labels[subjectKey] || subjectKey;
+  const color = colors[subjectKey] || "var(--primary)";
 
   const completed = chapters.filter((ch) => ch.status === "completed").length;
   const total = chapters.length;

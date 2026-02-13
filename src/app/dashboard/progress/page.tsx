@@ -5,11 +5,17 @@ import { useStore } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ProgressRing } from "@/components/ui/progress-ring";
-import { SUBJECT_LABELS, SUBJECT_COLORS, EXAMS } from "@/lib/constants";
+import { getExams, getSubjectLabels, getSubjectColors } from "@/lib/constants";
 import { today, dateStr, formatDate } from "@/lib/utils";
 
 export default function ProgressPage() {
   const data = useStore();
+
+  const lang = data.selectedLanguage || "kannada";
+  const elective = data.selectedElective || "computer";
+  const exams = useMemo(() => getExams(lang, elective), [lang, elective]);
+  const subjectLabels = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
+  const subjectColors = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
 
   const { totalChapters, completedChapters, overallPct, totalHours, subjectStats } = useMemo(() => {
     let total = 0;
@@ -18,15 +24,15 @@ export default function ProgressPage() {
     Object.values(data.studyLog || {}).forEach((log) => { hours += log.hours || 0; });
 
     const stats: { key: string; label: string; color: string; done: number; total: number; pct: number }[] = [];
-    Object.keys(SUBJECT_LABELS).forEach((key) => {
+    Object.keys(subjectLabels).forEach((key) => {
       const chapters = data.subjects[key] || [];
       const done = chapters.filter((c) => c.status === "completed").length;
       total += chapters.length;
       completed += done;
       stats.push({
         key,
-        label: SUBJECT_LABELS[key],
-        color: SUBJECT_COLORS[key],
+        label: subjectLabels[key],
+        color: subjectColors[key],
         done,
         total: chapters.length,
         pct: chapters.length > 0 ? Math.round((done / chapters.length) * 100) : 0,
@@ -40,7 +46,7 @@ export default function ProgressPage() {
       totalHours: hours,
       subjectStats: stats,
     };
-  }, [data.subjects, data.studyLog]);
+  }, [data.subjects, data.studyLog, subjectLabels, subjectColors]);
 
   // Heatmap data (last 60 days)
   const heatmapData = useMemo(() => {
@@ -87,7 +93,7 @@ export default function ProgressPage() {
 
   // Exam assessments
   const assessments = data.examAssessments || {};
-  const ratedExams = EXAMS.filter((e) => assessments[e.key] && !assessments[e.key].skipped);
+  const ratedExams = exams.filter((e) => assessments[e.key] && !assessments[e.key].skipped);
 
   // Subject distribution from timer sessions this week
   const subjectDist = useMemo(() => {
@@ -232,10 +238,10 @@ export default function ProgressPage() {
               const pct = Math.round((mins / subjectDist.totalMins) * 100);
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: SUBJECT_COLORS[key] }} />
-                  <span className="text-sm w-28 truncate" style={{ color: "var(--text)" }}>{SUBJECT_LABELS[key] || key}</span>
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: subjectColors[key] }} />
+                  <span className="text-sm w-28 truncate" style={{ color: "var(--text)" }}>{subjectLabels[key] || key}</span>
                   <div className="flex-1">
-                    <ProgressBar value={pct} color={SUBJECT_COLORS[key]} />
+                    <ProgressBar value={pct} color={subjectColors[key]} />
                   </div>
                   <span className="text-sm w-10 text-right" style={{ color: "var(--text-secondary)" }}>{pct}%</span>
                 </div>
@@ -254,7 +260,7 @@ export default function ProgressPage() {
               const a = assessments[exam.key];
               return (
                 <div key={exam.key} className="flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: SUBJECT_COLORS[exam.key] }} />
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: subjectColors[exam.key] }} />
                   <span className="text-sm flex-1" style={{ color: "var(--text)" }}>{exam.subject}</span>
                   <span className="text-sm" style={{ color: "var(--warning)" }}>
                     {"\u2605".repeat(a.rating)}{"\u2606".repeat(5 - a.rating)}

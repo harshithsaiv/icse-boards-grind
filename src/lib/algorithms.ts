@@ -1,6 +1,14 @@
-import { EXAMS, SUBJECT_LABELS, type Block, type Chapter } from "./constants";
+import { getExams, getSubjectLabels, type Block, type Chapter } from "./constants";
 import { dateStr, daysBetween, timeToMin, minToTime, today } from "./utils";
 import type { StoreState } from "@/store/use-store";
+
+function storeExams(data: Pick<StoreState, "selectedLanguage" | "selectedElective">) {
+  return getExams(data.selectedLanguage || "kannada", data.selectedElective || "computer");
+}
+
+function storeLabels(data: Pick<StoreState, "selectedLanguage" | "selectedElective">) {
+  return getSubjectLabels(data.selectedLanguage || "kannada", data.selectedElective || "computer");
+}
 
 export function getRevisionDueChapters(
   dateString: string,
@@ -27,9 +35,10 @@ export function getRevisionDueChapters(
 export function getSubjectPriority(
   subjectKey: string,
   targetDate: string,
-  data: Pick<StoreState, "subjects" | "subjectRatings">
+  data: Pick<StoreState, "subjects" | "subjectRatings" | "selectedLanguage" | "selectedElective">
 ): number {
-  const exam = EXAMS.find((e) => e.key === subjectKey);
+  const exams = storeExams(data);
+  const exam = exams.find((e) => e.key === subjectKey);
   if (!exam) return 0;
 
   const daysUntil = daysBetween(targetDate, exam.date);
@@ -52,6 +61,8 @@ export function getSubjectPriority(
 }
 
 export function generateDayPlan(dateString: string, data: StoreState): Block[] {
+  const exams = storeExams(data);
+  const labels = storeLabels(data);
   const routine = data.routine || { wake: "06:00", breakfast: "08:00", lunch: "13:00", snack: "17:00", dinner: "20:30", sleep: "22:30" };
   const blocks: Block[] = [];
 
@@ -70,20 +81,20 @@ export function generateDayPlan(dateString: string, data: StoreState): Block[] {
   const sleepMin = timeToMin(sleep);
 
   // Check if exam day
-  const examToday = EXAMS.find((e) => e.date === dateString);
+  const examToday = exams.find((e) => e.date === dateString);
   if (examToday) {
     blocks.push({ start: wake, end: minToTime(wakeMin + 30), label: "Wake Up + Fresh Up", type: "break" });
-    blocks.push({ start: minToTime(wakeMin + 30), end: minToTime(wakeMin + 60), label: `Quick Review \u2014 ${SUBJECT_LABELS[examToday.key]}`, type: "study", subjectKey: examToday.key });
+    blocks.push({ start: minToTime(wakeMin + 30), end: minToTime(wakeMin + 60), label: `Quick Review \u2014 ${labels[examToday.key] || examToday.subject}`, type: "study", subjectKey: examToday.key });
     blocks.push({ start: breakfast, end: minToTime(breakfastMin + 30), label: "BREAKFAST", type: "meal" });
     blocks.push({ start: minToTime(breakfastMin + 30), end: minToTime(breakfastMin + 60), label: "Relax + Prepare for Exam", type: "break" });
     blocks.push({ start: minToTime(breakfastMin + 60), end: minToTime(breakfastMin + 60 + 180), label: `EXAM \u2014 ${examToday.subject}`, type: "study", subjectKey: examToday.key });
     blocks.push({ start: lunch, end: minToTime(lunchMin + 45), label: "LUNCH + Rest", type: "meal" });
     blocks.push({ start: minToTime(lunchMin + 45), end: snack, label: "Rest / Light Activity", type: "break" });
 
-    const nextExam = EXAMS.find((e) => e.date > dateString);
+    const nextExam = exams.find((e) => e.date > dateString);
     if (nextExam) {
       blocks.push({ start: snack, end: minToTime(snackMin + 30), label: "Snack Break", type: "meal" });
-      blocks.push({ start: minToTime(snackMin + 30), end: dinner, label: `Light Study \u2014 ${SUBJECT_LABELS[nextExam.key]}`, type: "study", subjectKey: nextExam.key });
+      blocks.push({ start: minToTime(snackMin + 30), end: dinner, label: `Light Study \u2014 ${labels[nextExam.key] || nextExam.subject}`, type: "study", subjectKey: nextExam.key });
     }
     blocks.push({ start: dinner, end: minToTime(dinnerMin + 45), label: "DINNER", type: "meal" });
     blocks.push({ start: minToTime(dinnerMin + 45), end: sleep, label: "Relax + Early Sleep", type: "break" });
@@ -92,7 +103,7 @@ export function generateDayPlan(dateString: string, data: StoreState): Block[] {
   }
 
   // Check revision day (1-2 days before exam)
-  const revisionExam = EXAMS.find((e) => {
+  const revisionExam = exams.find((e) => {
     const d = daysBetween(dateString, e.date);
     return d >= 1 && d <= 2;
   });
@@ -101,7 +112,7 @@ export function generateDayPlan(dateString: string, data: StoreState): Block[] {
   const priorities: { key: string; priority: number }[] = [];
   const revisionDueChapters = getRevisionDueChapters(dateString, data.subjects);
   const revisionSubjects = new Set(revisionDueChapters.map((r) => r.subjectKey));
-  Object.keys(SUBJECT_LABELS).forEach((key) => {
+  Object.keys(labels).forEach((key) => {
     let p = getSubjectPriority(key, dateString, data);
     if (revisionSubjects.has(key)) p += 0.3;
     if (p > 0) priorities.push({ key, priority: p });
@@ -155,7 +166,7 @@ export function generateDayPlan(dateString: string, data: StoreState): Block[] {
           blocks.push({
             start: minToTime(cursor),
             end: minToTime(cursor + blockLen),
-            label: `${SUBJECT_LABELS[subj]} \u2014 ${chapterName}`,
+            label: `${labels[subj] || subj} \u2014 ${chapterName}`,
             type: "study",
             subjectKey: subj,
           });
@@ -181,7 +192,7 @@ export function generateDayPlan(dateString: string, data: StoreState): Block[] {
       blocks.push({
         start: minToTime(cursor),
         end: minToTime(sleepMin),
-        label: `Light Revision \u2014 ${SUBJECT_LABELS[revSubj]}`,
+        label: `Light Revision \u2014 ${labels[revSubj] || revSubj}`,
         type: "study",
         subjectKey: revSubj,
       });
@@ -198,6 +209,8 @@ export function getDayPlan(dateString: string, data: StoreState): Block[] {
 }
 
 export function analyzeStudyBalance(blocks: Block[], data: StoreState): string[] | null {
+  const exams = storeExams(data);
+  const labels = storeLabels(data);
   const subjectMinutes: Record<string, number> = {};
   let totalStudyMin = 0;
   blocks.forEach((b) => {
@@ -215,11 +228,11 @@ export function analyzeStudyBalance(blocks: Block[], data: StoreState): string[]
   Object.keys(subjectMinutes).forEach((key) => {
     const pct = subjectMinutes[key] / totalStudyMin;
     if (pct > 0.5 && Object.keys(subjectMinutes).length < 3) {
-      warnings.push(`You're spending ${Math.round(pct * 100)}% of study time on ${SUBJECT_LABELS[key]}. Consider diversifying.`);
+      warnings.push(`You're spending ${Math.round(pct * 100)}% of study time on ${labels[key] || key}. Consider diversifying.`);
     }
   });
 
-  const upcoming = EXAMS.filter((e) => {
+  const upcoming = exams.filter((e) => {
     const d = daysBetween(td, e.date);
     return d > 0 && d <= 10;
   });
@@ -228,7 +241,7 @@ export function analyzeStudyBalance(blocks: Block[], data: StoreState): string[]
     const chapters = data.subjects[exam.key] || [];
     const incomplete = chapters.filter((c) => c.status !== "completed").length;
     if (incomplete > 0 && !subjectMinutes[exam.key] && days <= 7) {
-      warnings.push(`${SUBJECT_LABELS[exam.key]} exam in ${days} days with ${incomplete} chapter${incomplete > 1 ? "s" : ""} left, but it's not in today's plan!`);
+      warnings.push(`${labels[exam.key] || exam.subject} exam in ${days} days with ${incomplete} chapter${incomplete > 1 ? "s" : ""} left, but it's not in today's plan!`);
     }
   });
 

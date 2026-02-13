@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useStore } from "@/store/use-store";
-import { SUBJECT_LABELS, SUBJECT_COLORS, type Block } from "@/lib/constants";
+import { getSubjectLabels, getSubjectColors, type Block } from "@/lib/constants";
 import { today, dateStr, formatDate, formatTime24, timeToMin, minToTime } from "@/lib/utils";
 import { getDayPlan, analyzeStudyBalance } from "@/lib/algorithms";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,8 @@ import { DayPlan } from "@/components/planner/day-plan";
 export default function PlannerPage() {
   const data = useStore();
   const td = today();
+  const SUBJECT_LABELS = useMemo(() => getSubjectLabels(data.selectedLanguage || "kannada", data.selectedElective || "computer"), [data.selectedLanguage, data.selectedElective]);
+  const SUBJECT_COLORS = useMemo(() => getSubjectColors(data.selectedLanguage || "kannada", data.selectedElective || "computer"), [data.selectedLanguage, data.selectedElective]);
 
   const [planDateObj, setPlanDateObj] = useState(new Date());
   const planDate = dateStr(planDateObj);

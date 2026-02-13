@@ -2,7 +2,7 @@
 
 import { useNotifications } from "@/store/use-notifications";
 import { useStore } from "@/store/use-store";
-import { EXAMS, SUBJECT_LABELS } from "@/lib/constants";
+import { getExams, getSubjectLabels } from "@/lib/constants";
 import { today, daysBetween } from "@/lib/utils";
 import { useEffect } from "react";
 
@@ -13,10 +13,15 @@ interface Props {
 export function NotificationCenter({ onClose }: Props) {
   const { notifications, markAllRead, addNotification } = useNotifications();
   const subjects = useStore((s) => s.subjects);
+  const selectedLanguage = useStore((s) => s.selectedLanguage) || "kannada";
+  const selectedElective = useStore((s) => s.selectedElective) || "computer";
 
   // Generate revision-due notifications on mount
   useEffect(() => {
     const td = today();
+    const SUBJECT_LABELS = getSubjectLabels(selectedLanguage, selectedElective);
+    const exams = getExams(selectedLanguage, selectedElective);
+
     Object.keys(subjects).forEach((subjectKey) => {
       (subjects[subjectKey] || []).forEach((ch) => {
         if (ch.status === "needs_revision" && ch.revisionDate && ch.revisionIntervals) {
@@ -28,7 +33,7 @@ export function NotificationCenter({ onClose }: Props) {
             if (dueDateStr === td) {
               addNotification({
                 title: "Revision Due",
-                message: `${SUBJECT_LABELS[subjectKey]} - ${ch.name} is due for revision today`,
+                message: `${SUBJECT_LABELS[subjectKey] || subjectKey} - ${ch.name} is due for revision today`,
                 type: "warning",
               });
             }
@@ -38,7 +43,7 @@ export function NotificationCenter({ onClose }: Props) {
     });
 
     // Upcoming exam alerts
-    EXAMS.forEach((exam) => {
+    exams.forEach((exam) => {
       const days = daysBetween(td, exam.date);
       if (days >= 0 && days <= 2) {
         addNotification({
