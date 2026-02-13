@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { getExams, getSubjectColors, getSubjectLabels, type Block } from "@/lib/constants";
 import { today, formatDate, formatTime24, timeToMin, daysBetween } from "@/lib/utils";
@@ -33,6 +34,7 @@ export default function CalendarPage() {
 
   // Auto-refresh every minute
   useEffect(() => {
+    posthog.capture("calendar_page_viewed");
     const interval = setInterval(() => setCurrentNow(new Date()), 60000);
     return () => clearInterval(interval);
   }, []);

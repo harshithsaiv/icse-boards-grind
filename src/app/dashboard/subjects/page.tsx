@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { getSubjectLabels } from "@/lib/constants";
 import { SubjectCard } from "@/components/subjects/subject-card";
@@ -10,6 +11,10 @@ export default function SubjectsPage() {
   const elective = useStore((s) => s.selectedElective) || "computer";
   const subjectLabels = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
   const subjectKeys = Object.keys(subjectLabels);
+
+  useEffect(() => {
+    posthog.capture("subjects_page_viewed");
+  }, []);
 
   return (
     <div className="max-w-5xl mx-auto space-y-3">

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { getSubjectLabels, getSubjectColors, type Block } from "@/lib/constants";
 import { today, dateStr, formatDate, formatTime24, timeToMin, minToTime } from "@/lib/utils";
@@ -28,6 +29,7 @@ export default function PlannerPage() {
 
   // Auto-refresh every minute
   useEffect(() => {
+    posthog.capture("planner_page_viewed");
     const interval = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(interval);
   }, []);
@@ -77,6 +79,7 @@ export default function PlannerPage() {
 
   // Open edit modal
   const handleBlockClick = useCallback((block: Block, index: number) => {
+    posthog.capture("planner_block_clicked", { block_type: block.type });
     setEditIndex(index);
     setEditType(block.type);
     setEditSubject(block.subjectKey || "");
@@ -88,6 +91,7 @@ export default function PlannerPage() {
 
   // Add new block
   const handleAddBlock = () => {
+    posthog.capture("planner_add_block_clicked");
     setEditIndex(null);
     setEditType("study");
     setEditSubject(Object.keys(SUBJECT_LABELS)[0]);
@@ -107,8 +111,9 @@ export default function PlannerPage() {
       ...(editType === "study" && editSubject ? { subjectKey: editSubject } : {}),
     };
 
+    const isEdit = editIndex !== null;
     const newBlocks = [...blocks];
-    if (editIndex !== null) {
+    if (isEdit) {
       newBlocks[editIndex] = newBlock;
     } else {
       newBlocks.push(newBlock);
@@ -124,6 +129,11 @@ export default function PlannerPage() {
       return { customPlans: s.customPlans };
     });
 
+    posthog.capture(isEdit ? "planner_block_edited" : "planner_block_added", {
+      block_type: editType,
+      duration_minutes: timeToMin(editEnd) - timeToMin(editStart),
+    });
+
     setEditModalOpen(false);
   };
 
@@ -131,6 +141,7 @@ export default function PlannerPage() {
   const handleDelete = () => {
     if (editIndex === null) return;
 
+    const deletedBlock = blocks[editIndex];
     const newBlocks = blocks.filter((_, i) => i !== editIndex);
 
     useStore.getState().update((s) => {
@@ -139,11 +150,14 @@ export default function PlannerPage() {
       return { customPlans: s.customPlans };
     });
 
+    posthog.capture("planner_block_deleted", { block_type: deletedBlock.type });
+
     setEditModalOpen(false);
   };
 
   // Reset plan
   const handleResetPlan = () => {
+    posthog.capture("planner_plan_reset", { date: planDate });
     useStore.getState().update((s) => {
       if (s.customPlans) {
         delete s.customPlans[planDate];

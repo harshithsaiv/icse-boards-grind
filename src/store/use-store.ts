@@ -73,6 +73,9 @@ export interface StoreState {
   coachMessages: Record<string, CoachMessage[]>;
   dailyBriefingCache: Record<string, { content: string; timestamp: number }>;
   solvedPapers: string[];
+  grammarDrillStats: Record<string, { attempted: number; correct: number }>;
+  jcFlashcardsReviewed: string[];
+  jcQuizScores: { score: number; total: number; timestamp: number }[];
   _hydrated: boolean;
 }
 
@@ -116,6 +119,9 @@ const defaultState: StoreState = {
   coachMessages: {},
   dailyBriefingCache: {},
   solvedPapers: [],
+  grammarDrillStats: {},
+  jcFlashcardsReviewed: [],
+  jcQuizScores: [],
   _hydrated: false,
 };
 

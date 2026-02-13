@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { useAuth } from "@/providers/auth-provider";
 import { Card } from "@/components/ui/card";
@@ -34,6 +35,10 @@ export default function SettingsPage() {
   const [importData, setImportData] = useState<Record<string, unknown> | null>(null);
   const [importError, setImportError] = useState("");
 
+  useEffect(() => {
+    posthog.capture("settings_page_viewed");
+  }, []);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(""), 3000);
@@ -48,6 +53,11 @@ export default function SettingsPage() {
       grokApiKey,
       routine,
     }));
+    posthog.capture("settings_saved", {
+      study_hours: studyHours,
+      target_percent: targetPercent,
+      has_grok_key: !!grokApiKey,
+    });
     showToast("Settings saved!");
   };
 
@@ -61,6 +71,7 @@ export default function SettingsPage() {
     a.download = `icse-grind-backup-${today()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    posthog.capture("data_exported");
     showToast("Data exported!");
   };
 
@@ -89,6 +100,7 @@ export default function SettingsPage() {
 
   const doImport = (mode: "replace" | "merge") => {
     if (!importData) return;
+    posthog.capture("data_imported", { mode });
     if (mode === "replace") {
       setAll(importData);
     } else {
@@ -172,7 +184,10 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>Second Language</label>
             <select
               value={lang}
-              onChange={(e) => setField("selectedLanguage", e.target.value)}
+              onChange={(e) => {
+                posthog.capture("language_changed", { new_language: e.target.value });
+                setField("selectedLanguage", e.target.value);
+              }}
               className="w-full px-3 py-2 rounded-lg text-sm"
               style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
             >
@@ -185,7 +200,10 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>Elective</label>
             <select
               value={elective}
-              onChange={(e) => setField("selectedElective", e.target.value)}
+              onChange={(e) => {
+                posthog.capture("elective_changed", { new_elective: e.target.value });
+                setField("selectedElective", e.target.value);
+              }}
               className="w-full px-3 py-2 rounded-lg text-sm"
               style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
             >

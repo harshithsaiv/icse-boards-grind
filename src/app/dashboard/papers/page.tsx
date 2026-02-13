@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
 import { StatChip } from "@/components/ui/stat-chip";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { getSubjectLabels, getSubjectColors } from "@/lib/constants";
+import { getSubjectLabels, getSubjectColors, ALL_SUBJECT_LABELS, ALL_SUBJECT_COLORS } from "@/lib/constants";
 import {
   PRACTICE_PAPERS,
   getPapersForSubjects,
+  getAllSubjectsWithPapers,
   getAvailableYears,
   type PracticePaper,
 } from "@/lib/practice-papers";
@@ -34,11 +35,29 @@ export default function PapersPage() {
 
   const subjectLabels = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
   const subjectColors = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
+  const fullSubjectLabels = useMemo(() => ({ ...ALL_SUBJECT_LABELS, ...subjectLabels }), [subjectLabels]);
+  const fullSubjectColors = useMemo(() => ({ ...ALL_SUBJECT_COLORS, ...subjectColors }), [subjectColors]);
   const subjectKeys = useMemo(() => Object.keys(subjectLabels), [subjectLabels]);
+  const allSubjectKeys = useMemo(() => getAllSubjectsWithPapers(), []);
   const availableYears = useMemo(() => getAvailableYears(), []);
 
-  // All papers relevant to user's subjects
-  const userPapers = useMemo(() => getPapersForSubjects(subjectKeys), [subjectKeys]);
+  useEffect(() => {
+    posthog.capture("papers_page_viewed");
+  }, []);
+
+  // Toggle: show only my subjects vs all papers
+  const [showAllPapers, setShowAllPapers] = useState(false);
+  const effectiveSubjectKeys = showAllPapers ? allSubjectKeys : subjectKeys;
+
+  // Track filter changes
+  useEffect(() => {
+    if (showAllPapers) {
+      posthog.capture("papers_show_all_toggled", { show_all: true });
+    }
+  }, [showAllPapers]);
+
+  // All papers relevant to selected scope (my subjects or all)
+  const userPapers = useMemo(() => getPapersForSubjects(effectiveSubjectKeys), [effectiveSubjectKeys]);
 
   // Filter state
   const [filterSubject, setFilterSubject] = useState<string | null>(null);
@@ -62,29 +81,32 @@ export default function PapersPage() {
   const totalCount = userPapers.length;
   const completionPct = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
 
-  // Per-subject stats
+  // Per-subject stats (use effectiveSubjectKeys when showing all)
   const subjectStats = useMemo(() => {
     const stats: { key: string; label: string; color: string; solved: number; total: number }[] = [];
-    for (const key of subjectKeys) {
+    for (const key of effectiveSubjectKeys) {
       const papers = userPapers.filter((p) => p.subject === key);
       if (papers.length === 0) continue;
       const solved = papers.filter((p) => solvedPapers.includes(p.id)).length;
       stats.push({
         key,
-        label: subjectLabels[key],
-        color: subjectColors[key],
+        label: fullSubjectLabels[key] || subjectLabels[key] || key,
+        color: (showAllPapers ? fullSubjectColors : subjectColors)[key] || "#5f6368",
         solved,
         total: papers.length,
       });
     }
     return stats.sort((a, b) => b.total - a.total);
-  }, [subjectKeys, userPapers, solvedPapers, subjectLabels, subjectColors]);
+  }, [effectiveSubjectKeys, userPapers, solvedPapers, subjectLabels, subjectColors, fullSubjectLabels, fullSubjectColors, showAllPapers]);
 
   // Subjects that actually have papers (for filter pills)
   const subjectsWithPapers = useMemo(
     () => subjectStats.map((s) => s.key),
     [subjectStats]
   );
+
+  const labelsForDisplay = showAllPapers ? fullSubjectLabels : subjectLabels;
+  const colorsForDisplay = showAllPapers ? fullSubjectColors : subjectColors;
 
   const toggleSolved = (paperId: string) => {
     const wasSolved = solvedPapers.includes(paperId);
@@ -121,6 +143,20 @@ export default function PapersPage() {
 
       {/* Filter Bar */}
       <div className="space-y-3">
+        {/* My subjects vs All papers toggle */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <FilterPill
+            label="My subjects"
+            active={!showAllPapers}
+            onClick={() => setShowAllPapers(false)}
+          />
+          <FilterPill
+            label="All papers"
+            active={showAllPapers}
+            onClick={() => setShowAllPapers(true)}
+            color="#7b61ff"
+          />
+        </div>
         {/* Subject pills */}
         <div className="flex flex-wrap gap-2">
           <FilterPill
@@ -131,10 +167,10 @@ export default function PapersPage() {
           {subjectsWithPapers.map((key) => (
             <FilterPill
               key={key}
-              label={subjectLabels[key]}
+              label={labelsForDisplay[key] || key}
               active={filterSubject === key}
               onClick={() => setFilterSubject(filterSubject === key ? null : key)}
-              color={subjectColors[key]}
+              color={colorsForDisplay[key]}
             />
           ))}
         </div>
@@ -252,8 +288,8 @@ export default function PapersPage() {
             key={paper.id}
             paper={paper}
             solved={solvedPapers.includes(paper.id)}
-            subjectLabel={subjectLabels[paper.subject] || paper.subject}
-            subjectColor={subjectColors[paper.subject] || "#5f6368"}
+            subjectLabel={labelsForDisplay[paper.subject] || paper.subject}
+            subjectColor={colorsForDisplay[paper.subject] || "#5f6368"}
             onToggle={() => toggleSolved(paper.id)}
           />
         ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import posthog from "posthog-js";
 import { useAuth } from "@/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/store/use-store";
@@ -42,8 +43,10 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(email.trim(), password);
+      posthog.capture("user_logged_in", { method: "email" });
       router.replace("/dashboard");
     } catch (err) {
+      posthog.capture("login_failed", { method: "email", error: (err as FirebaseError).code });
       setError(friendlyAuthError((err as FirebaseError).code));
     } finally {
       setSubmitting(false);
@@ -60,8 +63,10 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await register(email.trim(), password);
+      posthog.capture("user_registered", { method: "email" });
       router.replace("/onboarding");
     } catch (err) {
+      posthog.capture("registration_failed", { method: "email", error: (err as FirebaseError).code });
       setError(friendlyAuthError((err as FirebaseError).code));
     } finally {
       setSubmitting(false);
@@ -205,7 +210,9 @@ export default function LoginPage() {
               setSubmitting(true);
               try {
                 await loginWithGoogle();
+                posthog.capture("user_logged_in", { method: "google" });
               } catch (err) {
+                posthog.capture("login_failed", { method: "google", error: (err as FirebaseError).code });
                 setError(friendlyAuthError((err as FirebaseError).code));
               } finally {
                 setSubmitting(false);

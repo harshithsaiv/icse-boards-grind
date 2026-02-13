@@ -152,6 +152,12 @@ export const PRACTICE_PAPERS: PracticePaper[] = [
   { id: "punjabi_2017_specimen_1", subject: "punjabi", year: 2017, type: "specimen", title: "Punjabi Specimen Paper 2017", url: `${CISCE}/Punjabi.pdf`, source: "cisce" },
 ];
 
+/** Get all unique subject keys that have papers */
+export function getAllSubjectsWithPapers(): string[] {
+  const keys = new Set(PRACTICE_PAPERS.map((p) => p.subject));
+  return Array.from(keys);
+}
+
 /** Get papers filtered to a set of subject keys */
 export function getPapersForSubjects(subjectKeys: string[]): PracticePaper[] {
   return PRACTICE_PAPERS.filter((p) => subjectKeys.includes(p.subject));

@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
 import { StatChip } from "@/components/ui/stat-chip";
@@ -23,6 +24,7 @@ export default function DashboardPage() {
 
   // Auto-refresh every minute
   useEffect(() => {
+    posthog.capture("dashboard_viewed");
     const interval = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(interval);
   }, []);

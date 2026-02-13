@@ -97,6 +97,34 @@ export function getExams(languageKey: string, electiveKey: string): Exam[] {
   return exams;
 }
 
+/** All possible subject labels and colors (for "show all papers" mode) */
+export const ALL_SUBJECT_LABELS: Record<string, string> = {
+  english_lang: "English Language",
+  english_lit: "English Literature",
+  math: "Mathematics",
+  physics: "Physics",
+  chemistry: "Chemistry",
+  biology: "Biology",
+  history: "History & Civics",
+  geography: "Geography",
+  ...Object.fromEntries(SECOND_LANGUAGES.map((l) => [l.key, l.name])),
+  ...Object.fromEntries(ELECTIVES.map((e) => [e.key, e.name])),
+  economics: "Economics",
+  commercial: "Commercial Studies",
+};
+
+/** All possible subject colors (for "show all papers" mode) */
+export const ALL_SUBJECT_COLORS: Record<string, string> = {
+  english_lang: "#7b61ff", english_lit: "#9c7cff", math: "#ea4335", physics: "#1a73e8",
+  chemistry: "#f9ab00", biology: "#12b5cb", history: "#d93025", geography: "#1e8e3e",
+  hindi: "#ff6b35", kannada: "#34a853", tamil: "#e040fb", telugu: "#00bfa5",
+  bengali: "#ff5722", malayalam: "#3f51b5", marathi: "#ff9800", gujarati: "#8bc34a",
+  punjabi: "#009688", urdu: "#795548", french: "#2196f3", german: "#607d8b", sanskrit: "#9c27b0",
+  computer: "#5f6368", economic_app: "#4caf50", physical_ed: "#ff5252",
+  home_science: "#e91e63", fashion: "#ab47bc", cookery: "#ff7043",
+  commercial: "#42a5f5", french_elective: "#26a69a", economics: "#66bb6a", env_science: "#29b6f6",
+};
+
 /** Get labels for all subjects including the selected language and elective */
 export function getSubjectLabels(languageKey: string, electiveKey: string): Record<string, string> {
   const labels: Record<string, string> = {

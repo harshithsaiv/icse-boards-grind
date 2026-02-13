@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -16,6 +17,10 @@ export default function ProgressPage() {
   const exams = useMemo(() => getExams(lang, elective), [lang, elective]);
   const subjectLabels = useMemo(() => getSubjectLabels(lang, elective), [lang, elective]);
   const subjectColors = useMemo(() => getSubjectColors(lang, elective), [lang, elective]);
+
+  useEffect(() => {
+    posthog.capture("progress_page_viewed");
+  }, []);
 
   const { totalChapters, completedChapters, overallPct, totalHours, subjectStats } = useMemo(() => {
     let total = 0;
