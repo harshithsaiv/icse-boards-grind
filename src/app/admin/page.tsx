@@ -22,6 +22,7 @@ import {
   computeLearningStyleDist, computePrepLevelDist,
   computeStreakDist, computeChapterCompletion,
   getUserTotalHours, getUserChaptersDone, getUserTotalChapters,
+  getUserSolvedPaperCount,
 } from "@/lib/admin-utils";
 import { SECOND_LANGUAGES, ELECTIVES } from "@/lib/constants";
 
@@ -36,7 +37,7 @@ const PIE_COLORS = ["#7b61ff", "#ea4335", "#1a73e8", "#f9ab00", "#12b5cb", "#34a
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pieLabel = (props: any) => `${props.name ?? ""} ${((props.percent ?? 0) * 100).toFixed(0)}%`;
 
-type SortKey = "name" | "email" | "streak" | "hours" | "chapters" | "target" | "prepLevel" | "lastActive" | "language" | "elective";
+type SortKey = "name" | "email" | "streak" | "hours" | "chapters" | "papers" | "target" | "prepLevel" | "lastActive" | "language" | "elective";
 type SortDir = "asc" | "desc";
 
 export default function AdminPage() {
@@ -123,6 +124,7 @@ export default function AdminPage() {
         case "streak": av = a.streak || 0; bv = b.streak || 0; break;
         case "hours": av = getUserTotalHours(a); bv = getUserTotalHours(b); break;
         case "chapters": av = getUserChaptersDone(a); bv = getUserChaptersDone(b); break;
+        case "papers": av = getUserSolvedPaperCount(a); bv = getUserSolvedPaperCount(b); break;
         case "target": av = a.targetPercent || 0; bv = b.targetPercent || 0; break;
         case "prepLevel": av = a.prepLevel || ""; bv = b.prepLevel || ""; break;
         case "lastActive": av = a.lastStudyDate || ""; bv = b.lastStudyDate || ""; break;
@@ -385,6 +387,7 @@ export default function AdminPage() {
                     ["streak", "Streak"],
                     ["hours", "Hours"],
                     ["chapters", "Ch. Done"],
+                    ["papers", "Papers"],
                     ["target", "Target %"],
                     ["prepLevel", "Prep"],
                     ["lastActive", "Last Active"],
@@ -415,6 +418,7 @@ export default function AdminPage() {
                     <td className="py-2 px-2">{u.streak || 0}</td>
                     <td className="py-2 px-2">{Math.round(getUserTotalHours(u) * 10) / 10}</td>
                     <td className="py-2 px-2">{getUserChaptersDone(u)}</td>
+                    <td className="py-2 px-2">{getUserSolvedPaperCount(u)}</td>
                     <td className="py-2 px-2">{u.targetPercent || 0}%</td>
                     <td className="py-2 px-2 whitespace-nowrap">{prepLabels[u.prepLevel || ""] || "N/A"}</td>
                     <td className="py-2 px-2 whitespace-nowrap">{u.lastStudyDate || "Never"}</td>
@@ -424,7 +428,7 @@ export default function AdminPage() {
                 ))}
                 {pagedUsers.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="py-8 text-center" style={{ color: "var(--text-secondary)" }}>
+                    <td colSpan={11} className="py-8 text-center" style={{ color: "var(--text-secondary)" }}>
                       {loading ? "Loading users..." : "No users found"}
                     </td>
                   </tr>
@@ -526,6 +530,7 @@ function UserDetailModal({ user, onClose }: { user: AdminUser | null; onClose: (
           <Row label="Last Active" value={user.lastStudyDate || "Never"} />
           <Row label="Total Hours" value={`${Math.round(totalHours * 10) / 10}h`} />
           <Row label="Chapters" value={`${chaptersDone}/${totalChapters}`} />
+          <Row label="Papers Solved" value={`${getUserSolvedPaperCount(user)}`} />
           <Row label="Target" value={`${user.targetPercent || 0}%`} />
           <Row label="Prep Level" value={prepLabels[user.prepLevel || ""] || "N/A"} />
           <Row label="Learning Style" value={user.learningStyle || "N/A"} />

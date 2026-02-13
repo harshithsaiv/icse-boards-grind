@@ -267,5 +267,6 @@ export const SECTION_TITLES: Record<string, string> = {
   coach: "AI Coach",
   timer: "Timer",
   progress: "Progress",
+  papers: "Practice Papers",
   settings: "Settings",
 };

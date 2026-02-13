@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
+import { PostHogProvider } from "@/providers/posthog-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Providers } from "@/providers/heroui-provider";
+import { PostHogPageview } from "@/components/posthog-pageview";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -34,11 +37,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
-          <ThemeProvider>
-            <Providers>
-              {children}
-            </Providers>
-          </ThemeProvider>
+          <PostHogProvider>
+            <Suspense fallback={null}>
+              <PostHogPageview />
+            </Suspense>
+            <ThemeProvider>
+              <Providers>
+                {children}
+              </Providers>
+            </ThemeProvider>
+          </PostHogProvider>
         </AuthProvider>
       </body>
     </html>

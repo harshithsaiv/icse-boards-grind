@@ -72,6 +72,7 @@ export interface StoreState {
   selectedElective: string;
   coachMessages: Record<string, CoachMessage[]>;
   dailyBriefingCache: Record<string, { content: string; timestamp: number }>;
+  solvedPapers: string[];
   _hydrated: boolean;
 }
 
@@ -114,6 +115,7 @@ const defaultState: StoreState = {
   selectedElective: "computer",
   coachMessages: {},
   dailyBriefingCache: {},
+  solvedPapers: [],
   _hydrated: false,
 };
 

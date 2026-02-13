@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import { STATUS_CYCLE, STATUS_LABELS, type Chapter } from "@/lib/constants";
 import { today, daysBetween } from "@/lib/utils";
@@ -36,6 +37,12 @@ export function ChapterRow({ chapter, subjectKey, index }: ChapterRowProps) {
 
       chapters[index] = updated;
       return { subjects: { ...state.subjects, [subjectKey]: chapters } };
+    });
+    posthog.capture("chapter_status_changed", {
+      subject: subjectKey,
+      chapter: chapter.name,
+      from_status: chapter.status,
+      to_status: nextStatus,
     });
   }
 

@@ -28,6 +28,7 @@ export interface AdminUser {
   lastStudyDate?: string | null;
   selectedLanguage?: string;
   selectedElective?: string;
+  solvedPapers?: string[];
 }
 
 function today(): string {
@@ -270,4 +271,8 @@ export function getUserTotalChapters(user: AdminUser): number {
     total += chapters.length;
   }
   return total;
+}
+
+export function getUserSolvedPaperCount(user: AdminUser): number {
+  return user.solvedPapers?.length || 0;
 }

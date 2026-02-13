@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import posthog from "posthog-js";
 import { useStore } from "@/store/use-store";
 import type { CoachMessage } from "@/store/use-store";
 import { Card } from "@/components/ui/card";
@@ -60,6 +61,7 @@ export function CoachChat() {
       timestamp: Date.now(),
     };
     addMessage(userMsg);
+    posthog.capture("coach_message_sent");
     setInput("");
     setStreaming(true);
     setStreamText("");
