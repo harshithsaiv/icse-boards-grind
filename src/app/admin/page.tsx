@@ -25,7 +25,11 @@ import {
 } from "@/lib/admin-utils";
 import { SECOND_LANGUAGES, ELECTIVES } from "@/lib/constants";
 
-const ADMIN_EMAIL = "prajwalbm40@gmail.com";
+const ADMIN_EMAILS = [
+  "prajwalbm40@gmail.com",
+  "rameshprajwal2001@gmail.com",
+  "harshithsaiv2306@gmail.com",
+];
 const PAGE_SIZE = 20;
 const PIE_COLORS = ["#7b61ff", "#ea4335", "#1a73e8", "#f9ab00", "#12b5cb", "#34a853", "#d93025", "#ff6b35", "#e040fb", "#9c27b0"];
 
@@ -58,7 +62,7 @@ export default function AdminPage() {
     setField("theme", "dark");
   }, [setField]);
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -454,7 +458,11 @@ export default function AdminPage() {
           <pre className="mt-2 p-3 rounded-lg text-xs overflow-x-auto" style={{ background: "var(--bg)", color: "var(--text-secondary)" }}>
 {`match /users/{userId} {
   allow read, write: if request.auth != null && request.auth.uid == userId;
-  allow read: if request.auth != null && request.auth.token.email == "${ADMIN_EMAIL}";
+  allow read: if request.auth != null && request.auth.token.email in [
+    "prajwalbm40@gmail.com",
+    "rameshprajwal2001@gmail.com",
+    "harshithsaiv2306@gmail.com"
+  ];
 }`}
           </pre>
         </Card>
