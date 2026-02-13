@@ -1,9 +1,15 @@
 "use client";
 
+import { useEffect } from "react";
+import posthog from "posthog-js";
 import { DailyBriefing } from "@/components/coach/daily-briefing";
 import { CoachChat } from "@/components/coach/coach-chat";
 
 export default function CoachPage() {
+  useEffect(() => {
+    posthog.capture("coach_page_viewed");
+  }, []);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Free trial banner */}

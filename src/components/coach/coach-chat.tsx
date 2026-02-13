@@ -52,7 +52,7 @@ export function CoachChat() {
     });
   };
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (text: string, source: "typed" | "quick_prompt" = "typed") => {
     const apiKey = getEffectiveAIKey(data.grokApiKey);
     if (!text.trim() || streaming) return;
 
@@ -62,7 +62,11 @@ export function CoachChat() {
       timestamp: Date.now(),
     };
     addMessage(userMsg);
-    posthog.capture("coach_message_sent");
+    posthog.capture("coach_message_sent", {
+      source,
+      message_length: text.trim().length,
+      is_quick_prompt: source === "quick_prompt",
+    });
     setInput("");
     setStreaming(true);
     setStreamText("");
@@ -218,7 +222,7 @@ export function CoachChat() {
         {QUICK_PROMPTS.map((prompt) => (
           <button
             key={prompt}
-            onClick={() => sendMessage(prompt)}
+            onClick={() => sendMessage(prompt, "quick_prompt")}
             disabled={streaming}
             className="px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-[1.02]"
             style={{
