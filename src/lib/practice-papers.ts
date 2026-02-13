@@ -5,10 +5,11 @@ export interface PracticePaper {
   type: "board" | "specimen" | "practice";
   title: string;
   url: string;
-  source: "respaper";
+  source: "respaper" | "cisce";
 }
 
 const BASE = "https://www.respaper.com";
+const CISCE = "https://cisceboard.org/pdf/ICSE-Class-X-Specimen-Question-Papers-2017";
 
 export const PRACTICE_PAPERS: PracticePaper[] = [
   // ── Mathematics ──
@@ -123,6 +124,32 @@ export const PRACTICE_PAPERS: PracticePaper[] = [
 
   // ── Physical Education ──
   { id: "physical_ed_2024_board_1", subject: "physical_ed", year: 2024, type: "board", title: "Physical Education Board Exam 2024", url: `${BASE}/samriddh2909/7716-pdf.html`, source: "respaper" },
+
+  // ── CISCE Specimen Papers 2017 ──
+  { id: "english_lang_2017_specimen_1", subject: "english_lang", year: 2017, type: "specimen", title: "English Language Specimen Paper 2017", url: `${CISCE}/English%20Language%20(English%20Paper%20-%201).pdf`, source: "cisce" },
+  { id: "english_lit_2017_specimen_1", subject: "english_lit", year: 2017, type: "specimen", title: "English Literature Specimen Paper 2017", url: `${CISCE}/Literature%20in%20English%20(English%20Paper%20-%202).pdf`, source: "cisce" },
+  { id: "hindi_2017_specimen_1", subject: "hindi", year: 2017, type: "specimen", title: "Hindi Specimen Paper 2017", url: `${CISCE}/Hindi.pdf`, source: "cisce" },
+  { id: "sanskrit_2017_specimen_1", subject: "sanskrit", year: 2017, type: "specimen", title: "Sanskrit Specimen Paper 2017", url: `${CISCE}/Sanskrit.pdf`, source: "cisce" },
+  { id: "french_2017_specimen_1", subject: "french", year: 2017, type: "specimen", title: "French Specimen Paper 2017", url: `${CISCE}/French%20(Group%201).pdf`, source: "cisce" },
+  { id: "german_2017_specimen_1", subject: "german", year: 2017, type: "specimen", title: "German Specimen Paper 2017", url: `${CISCE}/German%20(Group%201).pdf`, source: "cisce" },
+  { id: "history_2017_specimen_1", subject: "history", year: 2017, type: "specimen", title: "History & Civics Specimen Paper 2017", url: `${CISCE}/History_Civics(HCG%20Paper-1)-2014.pdf`, source: "cisce" },
+  { id: "geography_2017_specimen_1", subject: "geography", year: 2017, type: "specimen", title: "Geography Specimen Paper 2017", url: `${CISCE}/Geography%20(HCG%20Paper%20-%202).pdf`, source: "cisce" },
+  { id: "math_2017_specimen_1", subject: "math", year: 2017, type: "specimen", title: "Mathematics Specimen Paper 2017", url: `${CISCE}/Mathematics.pdf`, source: "cisce" },
+  { id: "physics_2017_specimen_1", subject: "physics", year: 2017, type: "specimen", title: "Physics Specimen Paper 2017", url: `${CISCE}/Physics%20(Science%20Paper%20-%201).pdf`, source: "cisce" },
+  { id: "chemistry_2017_specimen_1", subject: "chemistry", year: 2017, type: "specimen", title: "Chemistry Specimen Paper 2017", url: `${CISCE}/Chemistry%20(Science%20Paper%202).pdf`, source: "cisce" },
+  { id: "biology_2017_specimen_1", subject: "biology", year: 2017, type: "specimen", title: "Biology Specimen Paper 2017", url: `${CISCE}/Biology%20(Science%20Paper%203).pdf`, source: "cisce" },
+  { id: "economics_2017_specimen_1", subject: "economics", year: 2017, type: "specimen", title: "Economics Specimen Paper 2017", url: `${CISCE}/Economics.pdf`, source: "cisce" },
+  { id: "commercial_2017_specimen_1", subject: "commercial", year: 2017, type: "specimen", title: "Commercial Studies Specimen Paper 2017", url: `${CISCE}/Commercial%20Studies.pdf`, source: "cisce" },
+  { id: "env_science_2017_specimen_1", subject: "env_science", year: 2017, type: "specimen", title: "Environmental Science Specimen Paper 2017", url: `${CISCE}/Environmental%20Science.pdf`, source: "cisce" },
+  { id: "computer_2017_specimen_1", subject: "computer", year: 2017, type: "specimen", title: "Computer Applications Specimen Paper 2017", url: `${CISCE}/Computer%20Applications.pdf`, source: "cisce" },
+  { id: "physical_ed_2017_specimen_1", subject: "physical_ed", year: 2017, type: "specimen", title: "Physical Education Specimen Paper 2017", url: `${CISCE}/Physical%20Education.pdf`, source: "cisce" },
+  { id: "home_science_2017_specimen_1", subject: "home_science", year: 2017, type: "specimen", title: "Home Science Specimen Paper 2017", url: `${CISCE}/Home%20Science%20(Revised).pdf`, source: "cisce" },
+  { id: "fashion_2017_specimen_1", subject: "fashion", year: 2017, type: "specimen", title: "Fashion Designing Specimen Paper 2017", url: `${CISCE}/Fashion%20Designing.pdf`, source: "cisce" },
+  { id: "cookery_2017_specimen_1", subject: "cookery", year: 2017, type: "specimen", title: "Cookery Specimen Paper 2017", url: `${CISCE}/Cookery.pdf`, source: "cisce" },
+  { id: "bengali_2017_specimen_1", subject: "bengali", year: 2017, type: "specimen", title: "Bengali Specimen Paper 2017", url: `${CISCE}/Bengali.pdf`, source: "cisce" },
+  { id: "kannada_2017_specimen_1", subject: "kannada", year: 2017, type: "specimen", title: "Kannada Specimen Paper 2017", url: `${CISCE}/Kannada.pdf`, source: "cisce" },
+  { id: "malayalam_2017_specimen_1", subject: "malayalam", year: 2017, type: "specimen", title: "Malayalam Specimen Paper 2017", url: `${CISCE}/Malyalam.pdf`, source: "cisce" },
+  { id: "punjabi_2017_specimen_1", subject: "punjabi", year: 2017, type: "specimen", title: "Punjabi Specimen Paper 2017", url: `${CISCE}/Punjabi.pdf`, source: "cisce" },
 ];
 
 /** Get papers filtered to a set of subject keys */
