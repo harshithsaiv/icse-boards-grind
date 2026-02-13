@@ -9,7 +9,7 @@ import { useStore } from "@/store/use-store";
 import { SECOND_LANGUAGES, ELECTIVES, getSubjectLabels, getSubjectColors } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 9;
 
 export default function OnboardingPage() {
   const { user } = useAuth();
@@ -35,8 +35,6 @@ export default function OnboardingPage() {
     wake: "06:00", breakfast: "08:00", lunch: "13:00",
     snack: "17:00", dinner: "20:30", sleep: "22:30",
   });
-  const [grokApiKey, setGrokApiKey] = useState("");
-
   // Compute dynamic labels/colors based on selections
   const subjectLabels = useMemo(() => getSubjectLabels(selectedLanguage, selectedElective), [selectedLanguage, selectedElective]);
   const subjectColors = useMemo(() => getSubjectColors(selectedLanguage, selectedElective), [selectedLanguage, selectedElective]);
@@ -73,7 +71,6 @@ export default function OnboardingPage() {
         targetPercent,
         prepLevel: prepLevel as "just_started" | "somewhat" | "mostly_done",
         routine,
-        grokApiKey,
         onboarded: true,
       }));
       posthog.capture("onboarding_completed", {
@@ -83,7 +80,6 @@ export default function OnboardingPage() {
         study_hours: studyHours,
         target_percent: targetPercent,
         prep_level: prepLevel,
-        has_grok_key: !!grokApiKey,
       });
       router.replace("/dashboard");
     }
@@ -333,24 +329,6 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Step 10: Grok API Key */}
-              {step === 10 && (
-                <div className="text-center">
-                  <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text)" }}>AI Study Assistant</h2>
-                  <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Optional: Add an API key for AI-powered study help</p>
-                  <input
-                    type="password"
-                    value={grokApiKey}
-                    onChange={(e) => setGrokApiKey(e.target.value)}
-                    placeholder="xAI or Groq API key (optional)"
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                    style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
-                  />
-                  <p className="text-xs mt-3" style={{ color: "var(--text-secondary)" }}>
-                    You can skip this and add it later in Settings
-                  </p>
-                </div>
-              )}
             </div>
           </motion.div>
         </AnimatePresence>

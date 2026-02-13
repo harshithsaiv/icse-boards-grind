@@ -12,6 +12,7 @@ import {
   parseGrammarResponse,
   type ParsedGrammarQuestion,
 } from "@/lib/grammar-prompts";
+import { getEffectiveAIKey } from "@/lib/utils";
 
 export function GrammarDrill() {
   const grokApiKey = useStore((s) => s.grokApiKey);
@@ -35,7 +36,8 @@ export function GrammarDrill() {
 
       try {
         const prompt = getGrammarPrompt(categoryId);
-        const response = await sendChatCompletionSync(grokApiKey, [
+        const effectiveKey = getEffectiveAIKey(grokApiKey);
+        const response = await sendChatCompletionSync(effectiveKey, [
           { role: "user", content: prompt },
         ]);
         const parsed = parseGrammarResponse(response);
@@ -52,7 +54,7 @@ export function GrammarDrill() {
         setLoading(false);
       }
     },
-    [grokApiKey]
+    [grokApiKey]  // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const handleSelectCategory = (id: string) => {
@@ -82,35 +84,22 @@ export function GrammarDrill() {
     });
   };
 
-  if (!grokApiKey) {
-    return (
-      <Card>
-        <div className="text-center py-8">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--text-secondary)"
-            strokeWidth="1.5"
-            className="mx-auto mb-3"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0110 0v4" />
-          </svg>
-          <p className="font-medium mb-1" style={{ color: "var(--text)" }}>
-            API Key Required
-          </p>
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Add your Grok API key in Settings to use Grammar Drills.
-          </p>
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-4">
+      {/* Free AI banner */}
+      {!selectedCategory && (
+        <div
+          className="rounded-xl px-4 py-3 text-center text-sm"
+          style={{
+            background: "rgba(52,168,83,0.08)",
+            border: "1px solid rgba(52,168,83,0.2)",
+            color: "#34a853",
+          }}
+        >
+          AI-powered grammar drills are <strong>free</strong> for the next 4 days — no API key needed!
+        </div>
+      )}
+
       {/* Category Selection */}
       {!selectedCategory && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
