@@ -15,18 +15,22 @@ export function initPostHog() {
     autocapture: true,
     disable_session_recording: false,
     capture_exceptions: true,
+    debug: true,
   });
   initialized = true;
+  console.log("[PostHog] Initialized with key:", key.slice(0, 10) + "...");
 }
 
 export function capture(event: string, properties?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   if (!initialized) initPostHog();
+  console.log("[PostHog] capture:", event, properties);
   posthog.capture(event, properties);
 }
 
 export function identify(uid: string, traits?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
+  if (!initialized) initPostHog();
   posthog.identify(uid, traits);
 }
 
