@@ -11,27 +11,35 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-let _app: FirebaseApp | undefined;
+function getApp(): FirebaseApp {
+  return getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+}
+
+// Lazy initialization getters
 let _auth: Auth | undefined;
 let _db: Firestore | undefined;
 
-function getApp(): FirebaseApp {
-  if (!_app) {
-    _app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  }
-  return _app;
+export function getAuthInstance(): Auth {
+  if (!_auth) _auth = getAuth(getApp());
+  return _auth;
 }
 
+export function getDbInstance(): Firestore {
+  if (!_db) _db = getFirestore(getApp());
+  return _db;
+}
+
+// For backward compatibility - these will be initialized on first access
 export const auth: Auth = new Proxy({} as Auth, {
   get(_, prop) {
-    if (!_auth) _auth = getAuth(getApp());
-    return (_auth as never)[prop];
+    const instance = getAuthInstance();
+    return (instance as never)[prop];
   },
 });
 
 export const db: Firestore = new Proxy({} as Firestore, {
   get(_, prop) {
-    if (!_db) _db = getFirestore(getApp());
-    return (_db as never)[prop];
+    const instance = getDbInstance();
+    return (instance as never)[prop];
   },
 });

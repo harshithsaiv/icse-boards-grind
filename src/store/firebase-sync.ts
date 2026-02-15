@@ -1,7 +1,7 @@
 "use client";
 
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getDbInstance } from "@/lib/firebase";
 import { useStore, type StoreState } from "./use-store";
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
@@ -33,7 +33,7 @@ async function pushToCloud() {
   if (!currentUid) return;
   try {
     const data = getDataToSync();
-    await setDoc(doc(db, "users", currentUid), data);
+    await setDoc(doc(getDbInstance(), "users", currentUid), data);
   } catch (e) {
     console.error("Cloud sync failed:", e);
   }
@@ -42,7 +42,7 @@ async function pushToCloud() {
 export async function loadFromCloud(uid: string): Promise<boolean> {
   currentUid = uid;
   try {
-    const docSnap = await getDoc(doc(db, "users", uid));
+    const docSnap = await getDoc(doc(getDbInstance(), "users", uid));
     if (docSnap.exists()) {
       const cloudData = docSnap.data();
       useStore.getState().setAll(cloudData as Partial<StoreState>);
@@ -57,7 +57,7 @@ export async function loadFromCloud(uid: string): Promise<boolean> {
 export async function deleteCloudData(uid: string) {
   try {
     const { deleteDoc } = await import("firebase/firestore");
-    await deleteDoc(doc(db, "users", uid));
+    await deleteDoc(doc(getDbInstance(), "users", uid));
   } catch {
     /* ignore */
   }

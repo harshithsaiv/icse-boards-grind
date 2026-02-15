@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { getSubjectLabels, getSubjectColors, SECOND_LANGUAGES, ELECTIVES } from "@/lib/constants";
 import { today } from "@/lib/utils";
 import { deleteCloudData } from "@/store/firebase-sync";
+import { NotificationSettings } from "@/components/notifications/notification-settings";
 
 export default function SettingsPage() {
   const data = useStore();
@@ -270,6 +271,9 @@ export default function SettingsPage() {
           })}
         </div>
       </Card>
+
+      {/* Push Notifications */}
+      <NotificationSettings />
 
       {/* AI Chat */}
       <Card>

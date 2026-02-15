@@ -8,6 +8,7 @@ import { useStore } from "@/store/use-store";
 import { capture } from "@/lib/analytics";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -17,6 +18,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Initialize push notifications
+  usePushNotifications();
 
   const showCoachBanner = pathname !== "/dashboard/coach" && pathname !== "/dashboard/settings";
 
